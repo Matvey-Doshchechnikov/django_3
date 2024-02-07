@@ -1,13 +1,20 @@
+import random
 from datacenter.models import Schoolkid, Mark, \
-    Chastisement, Lesson, Commendation
+    Chastisement, Lesson, Commendation, Subject
+
+
+RECOMMENDATIONS = [
+    "Хвалю!",
+    "Отлично!",
+    "Молодец!",
+    "Так держать!",
+]
+
 
 def fix_marks(child_name: str) -> None:
     schoolkid = get_schoolkid(child_name)
     bad_marks = Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3])
-    for bad_mark in bad_marks:
-        mark = Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3]).first()
-        mark.points = 5
-        mark.save()
+    bad_marks.update(points=5)
     print("Оценки исправлены")
 
 
@@ -20,15 +27,22 @@ def remove_chastisements(child_name: str) -> None:
 
 def get_schoolkid(child_name: str) -> Schoolkid:
     try:
-        child = Schoolkid.objects.get(full_name__contains=child_name)
-    except Schoolkid.DoesNotExist as exeption:
-        print(f'{exeption}.Ученик не найден')
-    else:
-        print(f'Ученик  "{child.full_name}" найден.')
-        return child
+        children = Schoolkid.objects.filter(full_name__contains=child_name)
+        if not children.exists():
+            raise Schoolkid.DoesNotExist(f'Ученик с именем "{child_name}" не найден.')
+        elif children.count() > 1:
+            print(f'Найдено несколько учеников с именем "{child_name}".')
+            return None
+        else:
+            child = children.first()
+            print(f'Ученик "{child.full_name}" найден.')
+            return child
+    except Schoolkid.DoesNotExist as exception:
+        print(exception)
+        return None
 
 
-def create_commendation(child_name, subject):
+def create_commendation(child_name, subject, commendations=RECOMMENDATIONS):
     schoolkid = get_schoolkid(child_name)
     lessons = Lesson.objects.filter(
         year_of_study=schoolkid.year_of_study,
@@ -36,8 +50,15 @@ def create_commendation(child_name, subject):
         subject__title=subject,
     )
     lesson_of_subject = lessons.order_by('-date').first()
+    try:
+        if not lesson_of_subject:
+            raise Subject.DoesNotExist("В данный день не было урока.")
+    except Subject.DoesNotExist as e:
+        print(f"Ошибка: {e}")
+        return
+    commendation = random.choice(commendations)
     Commendation.objects.create(
-        text="Хвалю!",
+        text=commendation,
         created=lesson_of_subject.date,
         schoolkid=schoolkid,
         subject=lesson_of_subject.subject,
