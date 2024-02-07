@@ -22,7 +22,7 @@
 
 # Функция создания похвалы 
 
-`create_commendation("ФИ0 ученика", "Название предмета")`
+`create_commendation("ФИ0 ученика", "Название предмета",RECOMMENDATIONS)`
 
 
 
