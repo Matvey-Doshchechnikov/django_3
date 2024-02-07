@@ -1,3 +1,6 @@
+from datacenter.models import Schoolkid, Mark, \
+    Chastisement, Lesson, Commendation
+
 def fix_marks(child_name: str) -> None:
     schoolkid = get_schoolkid(child_name)
     bad_marks = Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3])
