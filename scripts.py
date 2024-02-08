@@ -27,18 +27,14 @@ def remove_chastisements(child_name: str) -> None:
 
 def get_schoolkid(child_name: str) -> Schoolkid:
     try:
-        children = Schoolkid.objects.filter(full_name__contains=child_name)
-        if not children.exists():
-            raise Schoolkid.DoesNotExist(f'Ученик с именем "{child_name}" не найден.')
-        elif children.count() > 1:
-            print(f'Найдено несколько учеников с именем "{child_name}".')
-            return None
-        else:
-            child = children.first()
-            print(f'Ученик "{child.full_name}" найден.')
-            return child
-    except Schoolkid.DoesNotExist as exception:
-        print(exception)
+        child = Schoolkid.objects.get(full_name__contains=child_name)
+        print(f'Ученик "{child.full_name}" найден.')
+        return child
+    except Schoolkid.DoesNotExist:
+        print(f'Ученик с именем "{child_name}" не найден.')
+        return None
+    except Schoolkid.MultipleObjectsReturned:
+        print(f'Найдено несколько учеников с именем "{child_name}".')
         return None
 
 
@@ -50,11 +46,8 @@ def create_commendation(child_name, subject, commendations=RECOMMENDATIONS):
         subject__title=subject,
     )
     lesson_of_subject = lessons.order_by('-date').first()
-    try:
-        if not lesson_of_subject:
-            raise Subject.DoesNotExist("В данный день не было урока.")
-    except Subject.DoesNotExist as e:
-        print(f"Ошибка: {e}")
+    if not lesson_of_subject:
+        print("В данный день не было урока.")
         return
     commendation = random.choice(commendations)
     Commendation.objects.create(
