@@ -24,6 +24,3 @@
 
 `create_commendation("ФИ0 ученика", "Название предмета",RECOMMENDATIONS)`
 
-
-
-Код написан в образовательных целях на платформе [Devman](https://dvmn.org/)
